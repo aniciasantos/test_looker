@@ -1,18 +1,35 @@
 - view: liquor_iowa_as
-  derived_table:
-    sql: |
-      SELECT * 
-        FROM [fh-bigquery:liquor.iowa]
-      LIMIT 10
+  sql_table_name: '[fh-bigquery:liquor.iowa]'
+      
 
   fields:
   - measure: count
     type: count
     drill_fields: detail*
 
-  - dimension: date
-    type: string
-    sql: ${TABLE}.date
+      
+  - measure: sum_bottle_qty
+    type: sum
+    sql: ${bottle_qty}
+  
+  - measure: avg_bottle_qty
+    type: number
+    sql: ${sum_bottle_qty}/${count}
+    
+  - measure: sum_total
+    type: sum
+    sql: ${total}
+  
+  - dimension: pack_tiers
+    type: tier
+    tiers: [0,10,50,200]
+    style: relational
+    sql: ${pack}
+
+  - dimension_group: date
+    type: time
+    timeframes: [date, week, month, year]
+    sql: timestamp(${TABLE}.date)
 
   - dimension_group: convenience_store
     type: time
@@ -36,7 +53,7 @@
     sql: ${TABLE}.city
 
   - dimension: zipcode
-    type: string
+    type: zipcode
     sql: ${TABLE}.zipcode
 
   - dimension: store_location
